@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>URL Phishing Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color:white;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      width: 350px;
+      margin: 20px auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #ff5e57;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e14c46;
+    }
+    .result {
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      background: rgba(0,0,0,0.2);
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 URL Phishing Detection</h1>
+
+  <div class="card">
+    <h3>Single URL Check</h3>
+    <form method="POST" action="/predict">
+      <input type="text" name="url" placeholder="Enter URL here" required>
+      <button type="submit">Check URL</button>
+    </form>
+    {% if prediction %}
+    <div class="result">Result: {{ prediction }}</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Bulk URL Check (Upload CSV/Excel)</h3>
+    <form method="POST" action="/bulk" enctype="multipart/form-data">
+      <input type="file" name="file" required>
+      <button type="submit">Upload & Check</button>
+    </form>
+  </div>
+</body>
+</html>
+

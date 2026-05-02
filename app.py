@@ -1,0 +1,86 @@
+from flask import Flask, render_template, request, send_file
+import pickle
+import pandas as pd
+import io
+
+app = Flask(__name__)
+
+model = pickle.load(open("model.pkl", "rb"))
+vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
+
+last_results = None  
+
+@app.route('/')
+def home():
+    return render_template("index.html")
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    url = request.form['url']
+    url_vector = vectorizer.transform([url])
+    prediction = model.predict(url_vector)[0]
+    confidence = model.predict_proba(url_vector)[0]  
+    phishing_prob = round(confidence[1] * 100, 2)
+    safe_prob = round(confidence[0] * 100, 2)
+
+    if prediction == 1:
+        result = f"⚠️ Phishing URL (Confidence: {phishing_prob}%)"
+    else:
+        result = f"✅ Safe URL (Confidence: {safe_prob}%)"
+
+    return render_template("index.html", prediction=result)
+
+@app.route('/bulk', methods=['POST'])
+def bulk_predict():
+    global last_results
+
+    file = request.files['file']
+    if not file:
+        return "No file uploaded", 400
+
+    filename = file.filename.lower()
+
+    if filename.endswith('.csv'):
+        df = pd.read_csv(file)
+    elif filename.endswith(('.xlsx', '.xls')):
+        df = pd.read_excel(file)
+    else:
+        return "Unsupported file format. Please upload CSV or Excel.", 400
+
+    if 'url' not in df.columns:
+        return "File must have a column named 'url'", 400
+
+    urls = df['url'].astype(str)
+    url_vectors = vectorizer.transform(urls)
+    predictions = model.predict(url_vectors)
+    probabilities = model.predict_proba(url_vectors)
+
+    results = []
+    for i, url in enumerate(urls):
+        label = "⚠️ Phishing" if predictions[i] == 1 else "✅ Safe"
+        confidence = round(max(probabilities[i]) * 100, 2)
+        results.append({"url": url, "result": label, "confidence": confidence})
+
+    last_results = pd.DataFrame(results)
+
+    return render_template("bulk_result.html", results=results)
+
+@app.route('/download_results')
+def download_results():
+    global last_results
+    if last_results is None:
+        return "No results available. Please upload a file first.", 400
+
+    output = io.StringIO()
+    last_results.to_csv(output, index=False)
+    output.seek(0)
+
+    return send_file(
+        io.BytesIO(output.getvalue().encode()),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="bulk_results.csv"
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)

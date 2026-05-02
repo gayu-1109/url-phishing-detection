@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bulk URL Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .download-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .download-btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h2>Bulk URL Detection Results</h2>
+
+  <table>
+    <tr>
+      <th>URL</th>
+      <th>Prediction</th>
+      <th>Confidence</th>
+    </tr>
+    {% for row in results %}
+    <tr>
+      <td>{{ row.url }}</td>
+      <td>{{ row.result }}</td>
+      <td>{{ row.confidence }}%</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="/download_results">
+    <button class="download-btn">⬇️ Download Results</button>
+  </a>
+</body>
+</html>
